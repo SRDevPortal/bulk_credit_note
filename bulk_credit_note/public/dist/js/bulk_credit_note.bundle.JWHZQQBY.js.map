@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../apps/bulk_credit_note/bulk_credit_note/public/js/bulk_credit_note.bundle.js"],
+  "sourcesContent": ["console.log(\"GLOBAL JS LOADED\");"],
+  "mappings": ";;AAAA,UAAQ,IAAI,kBAAkB;",
+  "names": []
+}

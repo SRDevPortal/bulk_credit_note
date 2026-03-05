@@ -16,8 +16,11 @@ def apply():
 
     ensure_module_def(MODULE_DEF_NAME, APP_PY_MODULE)
 
-    create_bulk_credit_note_doctype()
+    # Child table must exist first
     create_bulk_credit_note_item_doctype()
+
+    # Then parent
+    create_bulk_credit_note_doctype()
 
     frappe.clear_cache()
     frappe.db.commit()
@@ -28,6 +31,89 @@ def apply():
 # ---------------------------------------------------------
 # DocType Creators
 # ---------------------------------------------------------
+
+def create_bulk_credit_note_item_doctype():
+    """Create Bulk Credit Note Item child table if missing."""
+
+    doctype = "Bulk Credit Note Item"
+
+    if frappe.db.exists("DocType", doctype):
+        return
+
+    logger.info(f"Creating DocType: {doctype}")
+
+    doc = frappe.get_doc({
+        "doctype": "DocType",
+        "name": doctype,
+        "module": MODULE_DEF_NAME,
+        "custom": 0,
+        "istable": 1,
+        "editable_grid": 1,
+        "fields": [
+
+            {
+                "fieldname": "sales_invoice",
+                "label": "Sales Invoice",
+                "fieldtype": "Link",
+                "options": "Sales Invoice",
+                "reqd": 1,
+                "in_list_view": 1,
+                "columns": 2
+            },
+
+            {
+                "fieldname": "customer",
+                "label": "Customer",
+                "fieldtype": "Link",
+                "options": "Customer",
+                "in_list_view": 1,
+                "read_only": 1,
+                "columns": 2
+            },
+
+            {
+                "fieldname": "posting_date",
+                "label": "Invoice Posting Date",
+                "fieldtype": "Date",
+                "read_only": 1,
+                "in_list_view": 1,
+                "columns": 1
+            },
+
+            {
+                "fieldname": "grand_total",
+                "label": "Grand Total",
+                "fieldtype": "Currency",
+                "read_only": 1,
+                "in_list_view": 1,
+                "columns": 2
+            },
+
+            {
+                "fieldname": "outstanding_amount",
+                "label": "Outstanding",
+                "fieldtype": "Currency",
+                "read_only": 1,
+                "in_list_view": 1,
+                "columns": 2
+            },
+
+            {
+                "fieldname": "update_stock",
+                "label": "Update Stock",
+                "fieldtype": "Check",
+                "default": 0,
+                "read_only": 1,
+                "in_list_view": 1,
+                "columns": 1
+            },
+        ],
+        "permissions": []
+    })
+
+    doc.insert(ignore_permissions=True)
+    frappe.db.commit()
+
 
 def create_bulk_credit_note_doctype():
     """Create Bulk Credit Note parent DocType if missing."""
@@ -109,89 +195,6 @@ def create_bulk_credit_note_doctype():
                 "cancel": 1
             }
         ]
-    })
-
-    doc.insert(ignore_permissions=True)
-    frappe.db.commit()
-
-
-def create_bulk_credit_note_item_doctype():
-    """Create Bulk Credit Note Item child table if missing."""
-
-    doctype = "Bulk Credit Note Item"
-
-    if frappe.db.exists("DocType", doctype):
-        return
-
-    logger.info(f"Creating DocType: {doctype}")
-
-    doc = frappe.get_doc({
-        "doctype": "DocType",
-        "name": doctype,
-        "module": MODULE_DEF_NAME,
-        "custom": 0,
-        "istable": 1,
-        "editable_grid": 1,
-        "fields": [
-
-            {
-                "fieldname": "sales_invoice",
-                "label": "Sales Invoice",
-                "fieldtype": "Link",
-                "options": "Sales Invoice",
-                "reqd": 1,
-                "in_list_view": 1,
-                "columns": 2
-            },
-
-            {
-                "fieldname": "customer",
-                "label": "Customer",
-                "fieldtype": "Link",
-                "options": "Customer",
-                "in_list_view": 1,
-                "read_only": 1,
-                "columns": 2
-            },
-
-            {
-                "fieldname": "posting_date",
-                "label": "Invoice Posting Date",
-                "fieldtype": "Date",
-                "read_only": 1,
-                "in_list_view": 1,
-                "columns": 1
-            },
-
-            {
-                "fieldname": "grand_total",
-                "label": "Grand Total",
-                "fieldtype": "Currency",
-                "read_only": 1,
-                "in_list_view": 1,
-                "columns": 2
-            },
-
-            {
-                "fieldname": "outstanding_amount",
-                "label": "Outstanding",
-                "fieldtype": "Currency",
-                "read_only": 1,
-                "in_list_view": 1,
-                "columns": 2
-            },
-
-            {
-                "fieldname": "update_stock",
-                "label": "Update Stock",
-                "fieldtype": "Check",
-                "default": 0,
-                "read_only": 1,
-                "in_list_view": 1,
-                "columns": 1
-            },
-        ],
-        "permissions": []
     })
 
     doc.insert(ignore_permissions=True)

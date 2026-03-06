@@ -21,8 +21,7 @@ CUSTOMIZATION_DT_LIST = [
     "Notification",
     "Web Template",
     "Form Tour",
-    "Form Tour Step",
-    "Custom DocPerm",
+    "Form Tour Step"
 ]
 
 # ---------------------------------------------------------
@@ -53,11 +52,20 @@ def _delete_all(dt, filters=None):
                 name,
                 force=True,
                 ignore_permissions=True,
+                ignore_links=True,
                 delete_permanently=True,
             )
-        except Exception:
-            # fallback: disable if possible
-            logger.warning(f"Could not delete {dt}: {name}")
+
+        except Exception as e:
+            logger.warning(f"Could not delete {dt}: {name} - {e}")
+
+            if frappe.db.has_column(dt, "disabled"):
+                frappe.db.sql(
+                    f"UPDATE `tab{dt}` SET disabled=1 WHERE name=%s",
+                    name
+                )
+
+    frappe.db.commit()
 
 
 def _delete_custom_fields_by_app():

@@ -14,9 +14,8 @@ logger = logging.getLogger(__name__)
 # List of DocTypes shipped as JSON (folder names under doctype/)
 # ------------------------------------------------------------
 JSON_DOCTYPES = [
-    # Example:
-    # "sr_patient_disable_reason",
-    # "sr_patient_invoice_view",
+    # "bulk_credit_note",
+    # "bulk_credit_note_item",
 ]
 
 

@@ -1,3 +1,4 @@
+# bulk_credit_note/uninstall.py
 import frappe
 import logging
 
@@ -6,7 +7,7 @@ logger = logging.getLogger(__name__)
 APP = "bulk_credit_note"
 MODULE = "Bulk Credit Note"
 
-# Customizations potentially created by this app
+# Customizations & fixtures installed by this app
 CUSTOMIZATION_DT_LIST = [
     "Custom Field",
     "Property Setter",
@@ -24,23 +25,24 @@ CUSTOMIZATION_DT_LIST = [
     "Custom DocPerm",
 ]
 
-
 # ---------------------------------------------------------
 # Utility Functions
 # ---------------------------------------------------------
 
 def _delete_all(dt, filters=None):
-    """Delete documents safely."""
+    """Delete documents safely, only applying filters if fields exist."""
     if not frappe.db.exists("DocType", dt):
         return
 
     filters = filters or {}
 
+    # Remove invalid filters (e.g., module column missing)
     meta = frappe.get_meta(dt)
-    valid_filters = {
-        k: v for k, v in filters.items()
-        if k in meta.get_valid_columns()
-    }
+    valid_filters = {}
+
+    for key, value in filters.items():
+        if key in meta.get_valid_columns():
+            valid_filters[key] = value
 
     names = frappe.get_all(dt, pluck="name", filters=valid_filters)
 
@@ -54,14 +56,21 @@ def _delete_all(dt, filters=None):
                 delete_permanently=True,
             )
         except Exception:
+            # fallback: disable if possible
             logger.warning(f"Could not delete {dt}: {name}")
+
+
+def _delete_custom_fields_by_app():
+    """Some Custom Fields may not have module set."""
+    meta = frappe.get_meta("Custom Field")
+    if "app" in meta.get_valid_columns():
+        _delete_all("Custom Field", {"app": APP})
 
 
 def _delete_module_doctypes():
     """
     Remove custom DocTypes created under this module.
-    (Bench normally removes these automatically,
-     but this acts as a safety net.)
+    (Bench normally removes these automatically, but this acts as a safety net.)
     """
     doctypes = frappe.get_all(
         "DocType",
@@ -70,6 +79,7 @@ def _delete_module_doctypes():
     )
 
     for dt in doctypes:
+        # Only delete custom doctypes
         if not dt.custom:
             continue
 
@@ -129,10 +139,13 @@ def before_uninstall():
     for dt in CUSTOMIZATION_DT_LIST:
         _delete_all(dt, {"module": MODULE})
 
-    # 2️⃣ Remove custom DocTypes (safety net)
+    # 2️⃣ Remove custom fields linked by app name
+    _delete_custom_fields_by_app()
+
+    # 3️⃣ Remove custom DocTypes (safety net)
     _delete_module_doctypes()
 
-    # 3️⃣ Clear search index
+    # 4️⃣ Clear search index
     _clear_global_search()
 
     frappe.db.commit()

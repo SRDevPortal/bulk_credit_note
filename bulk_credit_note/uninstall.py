@@ -52,6 +52,7 @@ def _delete_all(dt, filters=None):
                 name,
                 force=True,
                 ignore_permissions=True,
+                ignore_links=True,
                 delete_permanently=True,
             )
 

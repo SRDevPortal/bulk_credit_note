@@ -36,8 +36,7 @@ fixtures = [
     {"dt": "Notification", "filters": [["module", "=", "Bulk Credit Note"]]},
     {"dt": "Web Template", "filters": [["module", "=", "Bulk Credit Note"]]},
     {"dt": "Form Tour", "filters": [["module", "=", "Bulk Credit Note"]]},
-    {"dt": "Form Tour Step", "filters": [["module", "=", "Bulk Credit Note"]]},
-    {"dt": "Custom DocPerm", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Form Tour Step", "filters": [["module", "=", "Bulk Credit Note"]]}
 ]
 
 # Apps

@@ -165,5 +165,3 @@ def process_bulk_credit_notes(docname):
 #     frappe.msgprint(
 #         f"Created Credit Notes: {', '.join(created_credit_notes)}"
 #     )
-
-

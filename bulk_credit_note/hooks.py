@@ -14,15 +14,31 @@ after_migrate = "bulk_credit_note.install.after_migrate"
 before_uninstall = "bulk_credit_note.uninstall.before_uninstall"
 after_uninstall = "bulk_credit_note.uninstall.after_uninstall"
 
-doctype_js = {
-    "Bulk Credit Note": "public/js/bulk_credit_note.js"
-}
-
 doc_events = {
     "Bulk Credit Note": {
         "on_submit": "bulk_credit_note.api.bulk_credit_note.create_credit_notes_on_submit"
     }
 }
+
+doctype_js = {
+    "Bulk Credit Note": "public/js/bulk_credit_note.js"
+}
+
+fixtures = [
+    {"dt": "Custom Field", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Property Setter", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Client Script", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Server Script", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Workspace", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Print Format", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Report", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Dashboard Chart", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Notification", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Web Template", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Form Tour", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Form Tour Step", "filters": [["module", "=", "Bulk Credit Note"]]},
+    {"dt": "Custom DocPerm", "filters": [["module", "=", "Bulk Credit Note"]]},
+]
 
 # Apps
 # ------------------

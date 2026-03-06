@@ -1,9 +1,23 @@
+# bulk_credit_note/setup/masters.py
 import frappe
 import logging
 
-from .utils import MODULE_DEF_NAME, APP_PY_MODULE, ensure_module_def
+from .utils import (
+    MODULE_DEF_NAME, APP_PY_MODULE,
+    ensure_module_def,
+    reload_local_json_doctypes,
+)
 
 logger = logging.getLogger(__name__)
+
+# ------------------------------------------------------------
+# List of DocTypes shipped as JSON (folder names under doctype/)
+# ------------------------------------------------------------
+JSON_DOCTYPES = [
+    # Example:
+    # "sr_patient_disable_reason",
+    # "sr_patient_invoice_view",
+]
 
 
 def apply():
@@ -15,6 +29,9 @@ def apply():
     logger.info("Applying Bulk Credit Note masters setup")
 
     ensure_module_def(MODULE_DEF_NAME, APP_PY_MODULE)
+
+    # Reload local JSON DocTypes
+    reload_local_json_doctypes(JSON_DOCTYPES)
 
     # Child table must exist first
     create_bulk_credit_note_item_doctype()
@@ -45,9 +62,10 @@ def create_bulk_credit_note_item_doctype():
             "doctype": "DocType",
             "name": doctype,
             "module": MODULE_DEF_NAME,
-            "custom": 0,
-            "istable": 1,
             "editable_grid": 1,
+            "track_changes": 1,
+            "istable": 1,
+            "custom": 0,
             "fields": [
 
                 {
@@ -57,7 +75,7 @@ def create_bulk_credit_note_item_doctype():
                     "options": "Sales Invoice",
                     "reqd": 1,
                     "in_list_view": 1,
-                    "columns": 2
+                    "columns": 2,
                 },
 
                 {
@@ -67,7 +85,7 @@ def create_bulk_credit_note_item_doctype():
                     "options": "Customer",
                     "in_list_view": 1,
                     "read_only": 1,
-                    "columns": 2
+                    "columns": 2,
                 },
 
                 {
@@ -76,7 +94,7 @@ def create_bulk_credit_note_item_doctype():
                     "fieldtype": "Date",
                     "read_only": 1,
                     "in_list_view": 1,
-                    "columns": 1
+                    "columns": 1,
                 },
 
                 {
@@ -85,7 +103,7 @@ def create_bulk_credit_note_item_doctype():
                     "fieldtype": "Currency",
                     "read_only": 1,
                     "in_list_view": 1,
-                    "columns": 2
+                    "columns": 2,
                 },
 
                 {
@@ -94,7 +112,7 @@ def create_bulk_credit_note_item_doctype():
                     "fieldtype": "Currency",
                     "read_only": 1,
                     "in_list_view": 1,
-                    "columns": 2
+                    "columns": 2,
                 },
 
                 {
@@ -104,10 +122,9 @@ def create_bulk_credit_note_item_doctype():
                     "default": 0,
                     "read_only": 1,
                     "in_list_view": 1,
-                    "columns": 1
+                    "columns": 1,
                 },
             ],
-            "permissions": []
         })
 
         doc.insert(ignore_permissions=True)
@@ -126,11 +143,11 @@ def create_bulk_credit_note_doctype():
         doc = frappe.get_doc({
             "doctype": "DocType",
             "name": doctype,
-            "module": MODULE_DEF_NAME,
-            "custom": 0,
+            "module": MODULE_DEF_NAME,            
             "autoname": "naming_series:",
-            "track_changes": 1,
             "is_submittable": 1,
+            "track_changes": 1,
+            "custom": 0,
             "fields": [
 
                 {

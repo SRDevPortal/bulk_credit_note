@@ -59,6 +59,7 @@ def _delete_all(dt, filters=None):
         except Exception as e:
             logger.warning(f"Could not delete {dt}: {name} - {e}")
 
+            # fallback: disable if possible
             if frappe.db.has_column(dt, "disabled"):
                 frappe.db.sql(
                     f"UPDATE `tab{dt}` SET disabled=1 WHERE name=%s",

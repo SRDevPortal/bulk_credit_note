@@ -14,8 +14,8 @@ logger = logging.getLogger(__name__)
 # List of DocTypes shipped as JSON (folder names under doctype/)
 # ------------------------------------------------------------
 JSON_DOCTYPES = [
-    # "bulk_credit_note",
-    # "bulk_credit_note_item",
+    "bulk_credit_note",
+    "bulk_credit_note_item",
 ]
 
 
@@ -164,7 +164,7 @@ def create_bulk_credit_note_doctype():
                     "fieldtype": "Link",
                     "options": "Company",
                     "reqd": 1,
-                    "default": frappe.defaults.get_user_default("Company"),
+                    "default": frappe.db.get_single_value("Global Defaults", "default_company"),
                 },
 
                 {
@@ -179,6 +179,13 @@ def create_bulk_credit_note_doctype():
                     "fieldname": "items_section",
                     "label": "Invoices",
                     "fieldtype": "Section Break"
+                },
+
+                {
+                    "fieldname": "scan_sales_invoice",
+                    "label": "Scan Sales Invoice",
+                    "fieldtype": "Data",
+                    "description": "Scan or enter Sales Invoice number"
                 },
 
                 {

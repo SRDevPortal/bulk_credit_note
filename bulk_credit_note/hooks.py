@@ -11,8 +11,8 @@ after_install = "bulk_credit_note.install.after_install"
 after_migrate = "bulk_credit_note.install.after_migrate"
 
 # Uninstallation
-before_uninstall = "bulk_credit_note.uninstall.before_uninstall"
-after_uninstall = "bulk_credit_note.uninstall.after_uninstall"
+# before_uninstall = "bulk_credit_note.uninstall.before_uninstall"
+# after_uninstall = "bulk_credit_note.uninstall.after_uninstall"
 
 doc_events = {
     "Bulk Credit Note": {

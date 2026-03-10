@@ -73,11 +73,17 @@ def process_bulk_credit_notes(docname):
             frappe.log_error(f"Credit Note already exists for {si.name}")
             continue
 
-        credit_note = make_return_doc("Sales Invoice", si.name)
+        # credit_note = make_return_doc("Sales Invoice", si.name)
+
+        credit_note_data = make_return_doc("Sales Invoice", si.name)
+        credit_note = frappe.get_doc(credit_note_data)
 
         credit_note.is_return = 1
         credit_note.return_against = si.name
-        credit_note.posting_date = doc.posting_date
+
+        credit_note.posting_date = frappe.utils.today()
+        credit_note.posting_time = frappe.utils.nowtime()
+
         credit_note.company = doc.company
         credit_note.update_stock = row.update_stock
 

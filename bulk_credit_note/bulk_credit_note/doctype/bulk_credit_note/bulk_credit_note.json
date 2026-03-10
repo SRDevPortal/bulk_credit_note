@@ -11,6 +11,7 @@
   "company",
   "posting_date",
   "items_section",
+  "scan_sales_invoice",
   "items",
   "amended_from"
  ],
@@ -25,7 +26,6 @@
    "reqd": 1
   },
   {
-   "default": "Eternity E-Commerce Private Limited",
    "fieldname": "company",
    "fieldtype": "Link",
    "in_list_view": 1,
@@ -45,6 +45,13 @@
    "fieldname": "items_section",
    "fieldtype": "Section Break",
    "label": "Invoices"
+  },
+  {
+    "fieldname": "scan_sales_invoice",
+    "label": "Scan Sales Invoice",
+    "fieldtype": "Data",
+    "in_list_view": 0,
+    "description": "Scan or enter Sales Invoice number"
   },
   {
    "fieldname": "items",

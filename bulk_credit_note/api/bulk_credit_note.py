@@ -60,49 +60,94 @@ def process_bulk_credit_notes(docname):
 
         si = frappe.get_doc("Sales Invoice", row.sales_invoice)
 
-        existing = frappe.db.exists(
+        # ✅ Prevent duplicate credit note
+        # existing = frappe.db.exists(
+        #     "Sales Invoice",
+        #     {
+        #         "return_against": si.name,
+        #         "is_return": 1,
+        #         "docstatus": 1
+        #     }
+        # )
+
+        existing = frappe.db.get_value(
             "Sales Invoice",
-            {
-                "return_against": si.name,
-                "is_return": 1,
-                "docstatus": 1
-            }
+            {"return_against": si.name, "is_return": 1, "docstatus": 1},
+            "name"
         )
 
         if existing:
             frappe.log_error(f"Credit Note already exists for {si.name}")
             continue
 
-        # credit_note = make_return_doc("Sales Invoice", si.name)
+        try:
+            # ✅ Create return doc
+            credit_note_data = make_return_doc("Sales Invoice", si.name)
+            credit_note = frappe.get_doc(credit_note_data)
 
-        credit_note_data = make_return_doc("Sales Invoice", si.name)
-        credit_note = frappe.get_doc(credit_note_data)
+            credit_note.is_return = 1
+            credit_note.return_against = si.name
 
-        credit_note.is_return = 1
-        credit_note.return_against = si.name
+            credit_note.posting_date = frappe.utils.today()
+            credit_note.posting_time = frappe.utils.nowtime()
 
-        credit_note.posting_date = frappe.utils.today()
-        credit_note.posting_time = frappe.utils.nowtime()
+            credit_note.company = doc.company
+            credit_note.update_stock = row.update_stock
 
-        credit_note.company = doc.company
-        credit_note.update_stock = row.update_stock
+            # ✅ Warehouse handling
+            if row.update_stock:
 
-        # Only invoice-level warehouse
-        if row.update_stock:
+                if not si.set_warehouse:
+                    frappe.log_error(
+                        f"Sales Invoice {si.name} missing Source Warehouse"
+                    )
+                    continue
 
-            if not si.set_warehouse:
-                frappe.log_error(
-                    f"Sales Invoice {si.name} missing Source Warehouse"
+                credit_note.set_warehouse = si.set_warehouse
+
+            # ==========================================================
+            # 🔥 DISCOUNT FIX (INTEGRATED - NO SERVER SCRIPT NEEDED)
+            # ==========================================================
+
+            if si.discount_amount:
+
+                # Step 1
+                credit_note.calculate_taxes_and_totals()
+
+                # Step 2
+                credit_note.apply_discount_on = "Grand Total"
+                credit_note.discount_amount = -abs(si.discount_amount)
+                credit_note.additional_discount_percentage = (
+                    si.additional_discount_percentage
                 )
-                continue
 
-            credit_note.set_warehouse = si.set_warehouse
+                # Step 3 CRITICAL: Recalculate after applying discount
+                credit_note.calculate_taxes_and_totals()
 
-        credit_note.insert(ignore_permissions=True)
-        credit_note.submit()
+                # Step 4 (prevent override during submit)
+                credit_note.flags.ignore_pricing_rule = True
+                
 
-        created_credit_notes.append(credit_note.name)
+            # ==========================================================
 
+            # ✅ Save + Submit
+            credit_note.insert(ignore_permissions=True)
+            credit_note.submit()
+
+            created_credit_notes.append(credit_note.name)
+
+        except Exception as e:
+            # frappe.log_error(
+            #     message=frappe.get_traceback(),
+            #     title=f"Bulk Credit Note Error for {si.name}"
+            # )
+
+            frappe.log_error(
+                message=frappe.get_traceback(),
+                title=f"Bulk Credit Note Error | Invoice: {si.name} | Row: {row.idx}"
+            )
+
+    # ✅ Notify user
     if created_credit_notes:
         frappe.publish_realtime(
             "msgprint",
@@ -110,64 +155,3 @@ def process_bulk_credit_notes(docname):
                 "message": f"Credit Notes Created: {', '.join(created_credit_notes)}"
             }
         )
-
-
-# @frappe.whitelist()
-# def create_credit_notes_on_submit(doc, method=None):
-#     """
-#     Triggered when Bulk Credit Note is submitted.
-#     Creates Credit Notes for each Sales Invoice.
-#     """
-
-#     created_credit_notes = []
-
-#     for row in doc.items:
-
-#         if not row.sales_invoice:
-#             continue
-
-#         if not frappe.db.exists("Sales Invoice", row.sales_invoice):
-#             frappe.throw(f"Sales Invoice {row.sales_invoice} not found")
-
-#         si = frappe.get_cached_doc("Sales Invoice", row.sales_invoice)
-
-#         # prevent duplicate return
-#         existing = frappe.db.exists(
-#             "Sales Invoice",
-#             {
-#                 "return_against": si.name,
-#                 "is_return": 1,
-#                 "docstatus": 1
-#             }
-#         )
-
-#         if existing:
-#             frappe.throw(f"Credit Note already exists for {si.name}")
-
-#         # Create return INVOICE using ERPNext core
-#         credit_note = make_return_doc("Sales Invoice", si.name)
-
-#         credit_note.is_return = 1
-#         credit_note.return_against = si.name
-#         credit_note.posting_date = doc.posting_date
-#         credit_note.company = doc.company
-#         credit_note.update_stock = row.update_stock
-
-#         # Use ONLY invoice-level warehouse
-#         if row.update_stock:
-
-#             if not si.set_warehouse:
-#                 frappe.throw(
-#                     f"Sales Invoice {si.name} does not have Source Warehouse"
-#                 )
-
-#             credit_note.set_warehouse = si.set_warehouse
-
-#         credit_note.insert(ignore_permissions=True)
-#         credit_note.submit()
-
-#         created_credit_notes.append(credit_note.name)
-    
-#     frappe.msgprint(
-#         f"Created Credit Notes: {', '.join(created_credit_notes)}"
-#     )

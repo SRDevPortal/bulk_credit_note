@@ -17,6 +17,9 @@ after_migrate = "bulk_credit_note.install.after_migrate"
 doc_events = {
     "Bulk Credit Note": {
         "on_submit": "bulk_credit_note.api.bulk_credit_note.create_credit_notes_on_submit"
+    },
+    "Sales Invoice": {
+        "after_save": "bulk_credit_note.api.sales_invoice.apply_credit_note_discount"
     }
 }
 
